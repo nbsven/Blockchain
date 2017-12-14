@@ -11,11 +11,11 @@ import java.io.File;
 import static org.bitcoinj.script.ScriptOpCodes.*;
 
 public class PayToPubKey extends ScriptTransaction {
-    private ECKey key;
+    private DeterministicKey key;
 
     public PayToPubKey(NetworkParameters parameters, File file, String password) {
         super(parameters, file, password);
-        key = getWallet().getImportedKeys().get(0);
+        key = getWallet().freshReceiveKey();
     }
 
     @Override

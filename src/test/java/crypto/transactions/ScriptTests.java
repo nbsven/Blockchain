@@ -9,8 +9,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spongycastle.util.encoders.Hex;
 
 import java.io.File;
+import java.net.URL;
 
 public class ScriptTests {
     // TODO: поставьте в true для использования mainnet.
@@ -34,7 +36,7 @@ public class ScriptTests {
             wallet_name = "test-wallet";
             LOGGER.info("Running on testnet.");
         }
-        kit = new WalletAppKit(networkParameters, new File(wallet_name), "oxygen");
+        kit = new WalletAppKit(networkParameters, new File(wallet_name), "eshkere");
     }
 
     public void downloadBlockchain() {
@@ -42,7 +44,7 @@ public class ScriptTests {
         kit.setAutoSave(true);
         kit.startAsync();
         kit.awaitRunning();
-//        kit.wallet().allowSpendingUnconfirmedTransactions();
+        kit.wallet().allowSpendingUnconfirmedTransactions();
         LOGGER.info("Synced blockchain.");
         LOGGER.info("You've got " + kit.wallet().getBalance() + " in your pocket");
     }
@@ -80,9 +82,15 @@ public class ScriptTests {
     @Test
     public void printAddress() {
         downloadBlockchain();
-
+//        kit.wallet().importKey(generateKeyFromString("Plak"));
+//        System.out.println(kit.wallet().getPendingTransactions());
         System.out.println(kit.wallet());
         LOGGER.info("Your address is {}", kit.wallet().currentReceiveAddress());
+//        for(Transaction t:kit.wallet().getPendingTransactions()){
+//            System.out.println(t);
+//            System.out.println("Raw Hex transaction: "+new String(Hex.encode(t.bitcoinSerialize())));
+//        }
+//        System.out.println(kit.wallet().getTransactions(false).iterator().next().bitcoinSerialize());
         kit.stopAsync();
         kit.awaitTerminated();
     }
