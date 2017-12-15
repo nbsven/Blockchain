@@ -36,7 +36,7 @@ public class ScriptTests {
             wallet_name = "test-wallet";
             LOGGER.info("Running on testnet.");
         }
-        kit = new WalletAppKit(networkParameters, new File(wallet_name), "eshkere");
+        kit = new WalletAppKit(networkParameters, new File(wallet_name), "oxygen");
     }
 
     public void downloadBlockchain() {
@@ -97,7 +97,7 @@ public class ScriptTests {
 
     private void testTransaction(ScriptTransaction scriptTransaction) throws InsufficientMoneyException {
         final Script inputScript = scriptTransaction.createInputScript();
-        Transaction transaction = scriptTransaction.createOutgoingTransaction(inputScript, Coin.CENT);
+        Transaction transaction = scriptTransaction.createOutgoingTransaction(inputScript, Coin.valueOf(1_500_000));
         TransactionOutput relevantOutput = transaction.getOutputs().stream().filter(to -> to.getScriptPubKey().equals(inputScript)).findAny().get();
         Transaction redemptionTransaction = scriptTransaction.createUnsignedRedemptionTransaction(relevantOutput, scriptTransaction.getReceiveAddress());
         Script redeemScript = scriptTransaction.createRedemptionScript(redemptionTransaction);
@@ -120,15 +120,15 @@ public class ScriptTests {
     }
 
     // TODO: Раскомментируйте этот тест, когда будете готовы с PayToPubKeyHash
-//    @Test
-//    public void testPayToPubKeyHash() throws InsufficientMoneyException {
-//        try (ScriptTransaction payToPubKeyHash = new PayToPubKeyHash(networkParameters, new File(wallet_name), "password")) {
-//            testTransaction(payToPubKeyHash);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Assert.fail(e.getMessage());
-//        }
-//    }
+    @Test
+    public void testPayToPubKeyHash() throws InsufficientMoneyException {
+        try (ScriptTransaction payToPubKeyHash = new PayToPubKeyHash(networkParameters, new File(wallet_name), "oxygen")) {
+            testTransaction(payToPubKeyHash);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
 
     // TODO: Раскомментируйте этот тест для проверки LinearEquationTransaction
 //    @Test
