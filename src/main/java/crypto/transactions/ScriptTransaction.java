@@ -12,6 +12,7 @@ import org.spongycastle.util.encoders.Hex;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public abstract class ScriptTransaction implements AutoCloseable {
 
@@ -64,6 +65,7 @@ public abstract class ScriptTransaction implements AutoCloseable {
 
     public Transaction createOutgoingTransaction(Script script, Coin amount) throws InsufficientMoneyException {
         Transaction transaction = new Transaction(parameters);
+        System.out.println(script.getChunks());
         transaction.addOutput(amount, script);
         Wallet.SendRequest request = Wallet.SendRequest.forTx(transaction);
         kit.wallet().completeTx(request);

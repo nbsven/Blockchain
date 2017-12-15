@@ -39,7 +39,6 @@ public class PayToPubKeyHash extends ScriptTransaction {
         ScriptBuilder builder = new ScriptBuilder();
         builder.data(txSig.encodeToBitcoin());
         builder.data(key.getPubKey());
-
         return builder.build();
     }
 }

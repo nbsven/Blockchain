@@ -36,7 +36,7 @@ public class ScriptTests {
             wallet_name = "test-wallet";
             LOGGER.info("Running on testnet.");
         }
-        kit = new WalletAppKit(networkParameters, new File(wallet_name), "oxygen");
+        kit = new WalletAppKit(networkParameters, new File(wallet_name), "password");
     }
 
     public void downloadBlockchain() {
@@ -110,7 +110,7 @@ public class ScriptTests {
     // TODO: раскомментируйте этот тест, когда у вас будут биткоины в testnet или mainnet, чтобы проверить, что транзакции работают как ожидается
     @Test
     public void testPayToPubKey() throws InsufficientMoneyException {
-        try (ScriptTransaction payToPubKey = new PayToPubKey(networkParameters, new File(wallet_name), "oxygen")) {
+        try (ScriptTransaction payToPubKey = new PayToPubKey(networkParameters, new File(wallet_name), "password")) {
             testTransaction(payToPubKey);
 
         } catch (Exception e) {
@@ -122,7 +122,7 @@ public class ScriptTests {
     // TODO: Раскомментируйте этот тест, когда будете готовы с PayToPubKeyHash
     @Test
     public void testPayToPubKeyHash() throws InsufficientMoneyException {
-        try (ScriptTransaction payToPubKeyHash = new PayToPubKeyHash(networkParameters, new File(wallet_name), "oxygen")) {
+        try (ScriptTransaction payToPubKeyHash = new PayToPubKeyHash(networkParameters, new File(wallet_name), "password")) {
             testTransaction(payToPubKeyHash);
         } catch (Exception e) {
             e.printStackTrace();
@@ -131,26 +131,26 @@ public class ScriptTests {
     }
 
     // TODO: Раскомментируйте этот тест для проверки LinearEquationTransaction
-//    @Test
-//    public void testLinearEquation() throws InsufficientMoneyException {
-//        try (LinearEquationTransaction linEq = new LinearEquationTransaction(networkParameters, new File(wallet_name), "password")) {
-//            testTransaction(linEq);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Assert.fail(e.getMessage());
-//        }
-//    }
+    @Test
+    public void testLinearEquation() throws InsufficientMoneyException {
+        try (LinearEquationTransaction linEq = new LinearEquationTransaction(networkParameters, new File(wallet_name), "password")) {
+            testTransaction(linEq);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
 
-    // TODO: Раскомментируйте, когда будет готова MultiSigTransaction
-//    @Test
-//    public void testMultiSig() throws InsufficientMoneyException {
-//        try (ScriptTransaction multiSig = new MultiSigTransaction(networkParameters, new File(wallet_name), "password")) {
-//            testTransaction(multiSig);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            Assert.fail(e.getMessage());
-//        }
-//    }
+//     TODO: Раскомментируйте, когда будет готова MultiSigTransaction
+    @Test
+    public void testMultiSig() throws InsufficientMoneyException {
+        try (ScriptTransaction multiSig = new MultiSigTransaction(networkParameters, new File(wallet_name), "password")) {
+            testTransaction(multiSig);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
 
     // TODO: Раскомментируйте, когда будете готовы вернуть тестовые биткоины сервису, от которого вы их получили
 //    @Test
