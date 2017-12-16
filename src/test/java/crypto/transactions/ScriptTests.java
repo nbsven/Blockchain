@@ -11,10 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongycastle.util.encoders.Hex;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.URL;
 
 public class ScriptTests {
+    public static final String PASSWORD = "eshkere";
     // TODO: поставьте в true для использования mainnet.
     private boolean useMainNet = false;
     // TODO: Измените этот адрес на адрес тестового сервиса для получения биткоинов, который вы использовали
@@ -23,6 +27,7 @@ public class ScriptTests {
     private String wallet_name;
     private NetworkParameters networkParameters;
     private WalletAppKit kit;
+    private Coin coins;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScriptTests.class);
 
@@ -36,7 +41,7 @@ public class ScriptTests {
             wallet_name = "test-wallet";
             LOGGER.info("Running on testnet.");
         }
-        kit = new WalletAppKit(networkParameters, new File(wallet_name), "password");
+        kit = new WalletAppKit(networkParameters, new File(wallet_name), PASSWORD);
     }
 
     public void downloadBlockchain() {
@@ -49,35 +54,7 @@ public class ScriptTests {
         LOGGER.info("You've got " + kit.wallet().getBalance() + " in your pocket");
     }
 
-    public ECKey generateKeyFromString(String name) {
-        ECKey key;
-        boolean flag = false;
-        name = name.toUpperCase();
-        while (true) {
-            key = new ECKey();
-            String s = key.toAddress(TestNet3Params.get()).toString();
-            if (s.charAt(0) == 'm' || s.charAt(0) == 'n' || s.charAt(0)=='1' || s.charAt(0)=='3') {
-//                System.out.println("0");
-//                System.out.println(s.substring(0,2));
-                if (s.charAt(1) == name.charAt(0) || s.charAt(1) == (char) ((int) name.charAt(0) + 32)) {
-//                    System.out.println("1");
-                    if (s.charAt(2) == name.charAt(1) || s.charAt(2) == (char) ((int) name.charAt(1) + 32)) {
-//                        System.out.println("2");
-                        if (s.charAt(3) == name.charAt(2) || s.charAt(3) == (char) ((int) name.charAt(2) + 32)) {
-                            System.out.println("3");
-                            if (s.charAt(4) == name.charAt(3) || s.charAt(4) == (char) ((int) name.charAt(3) + 32)) {
-                                System.out.println(s);
-                                System.out.println("4");
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-//            System.out.println(s);
-        }
-        return key;
-    }
+
 
     @Test
     public void printAddress() {
@@ -86,10 +63,16 @@ public class ScriptTests {
 //        System.out.println(kit.wallet().getPendingTransactions());
         System.out.println(kit.wallet());
         LOGGER.info("Your address is {}", kit.wallet().currentReceiveAddress());
-//        for(Transaction t:kit.wallet().getPendingTransactions()){
-//            System.out.println(t);
-//            System.out.println("Raw Hex transaction: "+new String(Hex.encode(t.bitcoinSerialize())));
-//        }
+        try (BufferedWriter writer=new BufferedWriter(new FileWriter(new File("Raw_transactions.txt")))) {
+            for(Transaction t:kit.wallet().getPendingTransactions()){
+                System.out.println("Raw Hex transaction: "+new String(Hex.encode(t.bitcoinSerialize())));
+                writer.write(String.format("%S%n%S%n%n",t.getHashAsString(),new String(Hex.encode(t.bitcoinSerialize()))));
+                System.out.println(t);
+            }
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
 //        System.out.println(kit.wallet().getTransactions(false).iterator().next().bitcoinSerialize());
         kit.stopAsync();
         kit.awaitTerminated();
@@ -97,7 +80,7 @@ public class ScriptTests {
 
     private void testTransaction(ScriptTransaction scriptTransaction) throws InsufficientMoneyException {
         final Script inputScript = scriptTransaction.createInputScript();
-        Transaction transaction = scriptTransaction.createOutgoingTransaction(inputScript, Coin.valueOf(1_500_000));
+        Transaction transaction = scriptTransaction.createOutgoingTransaction(inputScript, coins);
         TransactionOutput relevantOutput = transaction.getOutputs().stream().filter(to -> to.getScriptPubKey().equals(inputScript)).findAny().get();
         Transaction redemptionTransaction = scriptTransaction.createUnsignedRedemptionTransaction(relevantOutput, scriptTransaction.getReceiveAddress());
         Script redeemScript = scriptTransaction.createRedemptionScript(redemptionTransaction);
@@ -110,7 +93,7 @@ public class ScriptTests {
     // TODO: раскомментируйте этот тест, когда у вас будут биткоины в testnet или mainnet, чтобы проверить, что транзакции работают как ожидается
     @Test
     public void testPayToPubKey() throws InsufficientMoneyException {
-        try (ScriptTransaction payToPubKey = new PayToPubKey(networkParameters, new File(wallet_name), "password")) {
+        try (ScriptTransaction payToPubKey = new PayToPubKey(networkParameters, new File(wallet_name), PASSWORD)) {
             testTransaction(payToPubKey);
 
         } catch (Exception e) {
@@ -122,7 +105,8 @@ public class ScriptTests {
     // TODO: Раскомментируйте этот тест, когда будете готовы с PayToPubKeyHash
     @Test
     public void testPayToPubKeyHash() throws InsufficientMoneyException {
-        try (ScriptTransaction payToPubKeyHash = new PayToPubKeyHash(networkParameters, new File(wallet_name), "password")) {
+        try (ScriptTransaction payToPubKeyHash = new PayToPubKeyHash(networkParameters, new File(wallet_name), PASSWORD)) {
+            coins = Coin.valueOf(1_000_000);
             testTransaction(payToPubKeyHash);
         } catch (Exception e) {
             e.printStackTrace();
@@ -133,7 +117,8 @@ public class ScriptTests {
     // TODO: Раскомментируйте этот тест для проверки LinearEquationTransaction
     @Test
     public void testLinearEquation() throws InsufficientMoneyException {
-        try (LinearEquationTransaction linEq = new LinearEquationTransaction(networkParameters, new File(wallet_name), "password")) {
+        try (LinearEquationTransaction linEq = new LinearEquationTransaction(networkParameters, new File(wallet_name), PASSWORD)) {
+            coins = Coin.valueOf(2_000_000);
             testTransaction(linEq);
         } catch (Exception e) {
             e.printStackTrace();
@@ -144,7 +129,8 @@ public class ScriptTests {
 //     TODO: Раскомментируйте, когда будет готова MultiSigTransaction
     @Test
     public void testMultiSig() throws InsufficientMoneyException {
-        try (ScriptTransaction multiSig = new MultiSigTransaction(networkParameters, new File(wallet_name), "password")) {
+        try (ScriptTransaction multiSig = new MultiSigTransaction(networkParameters, new File(wallet_name), PASSWORD)) {
+            coins = Coin.valueOf(3_000_000);
             testTransaction(multiSig);
         } catch (Exception e) {
             e.printStackTrace();

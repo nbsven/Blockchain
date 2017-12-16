@@ -6,6 +6,7 @@ import org.bitcoinj.core.Utils;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.ScriptChunk;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -17,8 +18,8 @@ import static org.bitcoinj.script.ScriptOpCodes.*;
 public class LinearEquationTransaction extends ScriptTransaction {
     // TODO: Задание 2
 
-    private int day=14;
-    private int month=2;
+    private int day = 14;
+    private int month = 2 + 32;
 
     public LinearEquationTransaction(NetworkParameters parameters, File file, String password) {
         super(parameters, file, password);
@@ -26,22 +27,21 @@ public class LinearEquationTransaction extends ScriptTransaction {
 
     @Override
     public Script createInputScript() {
+
         ScriptBuilder builder = new ScriptBuilder();
+
         builder.op(OP_2DUP);
-
         builder.op(OP_ADD);
-        builder.smallNum(month);
+        byte[] mas = {(byte) month};
+        ScriptChunk chunk = new ScriptChunk(OP_PUSHDATA1, mas);
+        builder.addChunk(chunk);
 
-        System.out.println(Arrays.toString(encode(BigInteger.valueOf(month))));
         builder.op(OP_NUMEQUALVERIFY);
-
         builder.op(OP_SUB);
-
-        System.out.println(Arrays.toString(encode(BigInteger.valueOf(day))));
-
-//        builder.data(encode(BigInteger.valueOf(day)));
+        byte[] mas1 = {(byte) day};
+        chunk = new ScriptChunk(OP_PUSHDATA1, mas1);
+        builder.addChunk(chunk);
         builder.op(OP_NUMEQUAL);
-
 
         return builder.build();
     }
@@ -51,8 +51,16 @@ public class LinearEquationTransaction extends ScriptTransaction {
 //        TransactionSignature transactionSignature=si
 
         ScriptBuilder builder = new ScriptBuilder();
-        builder.smallNum((month+day)/2);
-        builder.smallNum((month-day)/2);
+
+        byte[] mas = {(byte) ((month + day) / 2)};
+        ScriptChunk chunk = new ScriptChunk(OP_PUSHDATA1, mas);
+        builder.addChunk(chunk);
+
+
+        byte[] mas1 = {(byte) ((month - day) / 2)};
+        chunk = new ScriptChunk(OP_PUSHDATA1, mas1);
+        builder.addChunk(chunk);
+
 
         return builder.build();
     }

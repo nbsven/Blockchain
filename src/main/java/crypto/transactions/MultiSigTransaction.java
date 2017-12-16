@@ -7,6 +7,7 @@ import org.bitcoinj.core.Wallet;
 import org.bitcoinj.crypto.TransactionSignature;
 import org.bitcoinj.script.Script;
 import org.bitcoinj.script.ScriptBuilder;
+import org.bitcoinj.script.ScriptChunk;
 import org.omg.CORBA.TRANSACTION_MODE;
 
 import java.awt.image.AreaAveragingScaleFilter;
@@ -27,7 +28,7 @@ public class MultiSigTransaction extends ScriptTransaction {
     public MultiSigTransaction(NetworkParameters parameters, File file, String password) {
         super(parameters, file, password);
         Wallet wallet = getWallet();
-        if (getWallet().getImportedKeys().size() < 4) {
+        if (getWallet().getImportedKeys().size() < 5) {
             client1 = new ECKey();
             client2 = new ECKey();
             client3 = new ECKey();
@@ -38,10 +39,10 @@ public class MultiSigTransaction extends ScriptTransaction {
             wallet.importKey(bank);
         } else {
             List<ECKey> list = wallet.getImportedKeys();
-            client1 = list.get(0);
-            client2 = list.get(1);
-            client3 = list.get(2);
-            bank = list.get(3);
+            client1 = list.get(1);
+            client2 = list.get(2);
+            client3 = list.get(3);
+            bank = list.get(4);
         }
     }
 
@@ -77,11 +78,14 @@ public class MultiSigTransaction extends ScriptTransaction {
         TransactionSignature txSigB = sign(unsignedTransaction, bank);
 
         ScriptBuilder builder = new ScriptBuilder();
-        builder.smallNum(0);
+//        builder.smallNum(0);
+        byte[] mas={0};
+        ScriptChunk chunk=new ScriptChunk(OP_PUSHDATA1,mas);
+        builder.addChunk(chunk);
         builder.data(txSig2.encodeToBitcoin());
         builder.data(txSigB.encodeToBitcoin());
         builder.smallNum(1);
-        builder.smallNum(0);
+        builder.addChunk(chunk);
         return builder.build();
     }
 }
